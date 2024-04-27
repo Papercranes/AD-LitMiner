@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AD-LitMiner</title>
+    {% load static %}
+    {% csrf_token %}
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static '/ADLitMiner/DataTables-1.10.21/media/css/jquery.dataTables.css' %}">
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="{% static '/ADLitMiner/js/jquery.min.js' %}"></script>
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf8" src="{% static '/ADLitMiner/DataTables-1.10.21/media/js/jquery.dataTables.js' %}"></script>
+    <!--引入多选框-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js"></script>
+
+        <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            /*box-sizing: border-box;*/
+            /*outline: none;*/
+            /*border: none;*/
+            text-decoration: none;
+            /*text-transform: capitalize;*/
+            transition: .2s linear;
+        }
+        /* header样式初始化*/
+        .header {
+            position: fixed;
+            top: 0;
+            /*left: 0;*/
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header .logo {
+            color: 	#696969;
+            padding: 0 3rem;
+            font-size: 14px;
+        }
+        /* 导航样式 */
+        .navbar ul{
+            display: flex;
+            font-family: Arial;
+            margin-right:50px;
+        }
+
+        .navbar ul li{
+            /*font-weight: bold;*/
+            /*width: 128px;*/
+            padding: 10px 12px;
+            list-style: none;
+            text-align:center;
+            /*border-right: 4px dashed blue;*/
+        }
+        .navbar ul li a {
+            /*width: 128px;*/
+            line-height: 45px;
+            font-size: 1.2rem;
+            color: 	#696969;
+        }
+        .navbar ul li a:hover{
+            color: 	#C0C0C0;
+        }
+        .navbar ul li a.active{
+            color: black;
+            text-shadow: 0px 1px 1px grey;
+        }
+        .title{
+            margin-top:70px;
+            /*font-family: Arial;*/
+            padding: 2rem 3rem;
+        }
+        .search-box{
+            padding: 2rem 3rem;
+        }
+        .search-box .input{
+            height: 40px;
+            /*margin-left: 10%;*/
+            text-align: center;
+            padding-top: 10px;
+        }
+        .main{
+            /*margin: 10px 50px;*/
+            margin-bottom: 20px;
+            height: 80vh;
+            /*border-style:solid;*/
+            /*border-color:#000000;*/
+            /*border-radius:30px;*/
+            padding-top: 2rem;
+            padding-bottom: 5rem;
+            padding-left: 3rem;
+            padding-right: 3rem;
+        }
+        .main .sentence-box{
+            float:left;
+            width: 60%;
+            padding-top: 40px;
+        }
+        .main .network-box{
+            float:right;
+            width: 35%;
+            /*background: #adadad;*/
+        }
+        .hide_column{
+            display: none;
+        }
+        button{
+            background-color:#696969;
+            color:white;
+            width: 100px;
+            height: 40px;
+            border:0;
+            font-size: 16px;
+            border-radius: 30px;
+            margin-left: 20px;
+        }
+        button:hover{
+            background-color:#C0C0C0;
+            color:black;
+        }
+.underline {
+      position: relative;
+      display: inline;
+      text-decoration: none;
+    }
+
+    .underline::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 1px;
+      width: 100%;
+      height: 1px;
+      background: #000;
+    }
+
+    .underline::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: -1px;
+      width: 100%;
+      height: 1px;
+      background: #000;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'ADLitMiner:homepage' %}" class="logo">
+            <h1>AD-LitMiner</h1>
+        </a>
+        <nav class="navbar">
+            <ul>
+                <li><a href="{% url 'ADLitMiner:introduction' %}">Introduction</a></li>
+                <li><a>|</a></li>
+                <li><a class="active" href="{% url 'ADLitMiner:evidence' %}">Evidence-based</a></li>
+                <li><a>|</a></li>
+                <li><a href="{% url 'ADLitMiner:function' %}">Drug Repurposing</a></li>
+                <li><a>|</a></li>
+                <li><a href="{% url 'ADLitMiner:tutorial' %}">Tutorial</a></li>
+                <li><a>|</a></li>
+                <li><a href="{% url 'ADLitMiner:contact' %}">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="title">
+        <h1>Evidence-based Network</h1><br>
+<!--        <ul>-->
+<!--            <li style="margin-left: 50px">这里将有一段对该页面的描述，如何操作，结果解释等等等......</li>-->
+<!--        </ul>-->
+    </div>
+
+
+    <div class="search-box">
+        <h2>Search</h2>
+        <div class="input">
+            <select id="input-list" multiple style="width: 80%">
+            </select>
+
+            <button id='senddata' onclick="sendData()">SEND</button>
+        </div>
+
+    </div>
+
+<div style="margin: auto;left:100px;right:100px;height: 3px;width: 100%;background: -webkit-linear-gradient(left,rgba(255, 255, 255, 0),black,rgba(255,255,255,0));
+background: linear-gradient(to right, rgba(255, 255, 255, 0),black,rgba(255,255,255,0));"></div>
+<!--<hr style="width: 90%; margin: auto; border: 2px solid #C0C0C0;"/>-->
+
+
+    <div class="main">
+        <h2>Results</h2>
+        <div class="network-box">
+            <div id="chart_network" style="width: 100%;height:80vh;"></div>
+        </div>
+
+        <div class="sentence-box">
+<!--            <h3>Evidence Table</h3><br>-->
+            <table id="evidence_table" class="display">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th style="width: 10%">PMID</th>
+                        <th>SentID</th>
+                        <th>Sentence</th>
+                        <th>node</th>
+                        <th>link</th>
+                        <th style="width: 5%">Select</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+<!--            <button id="selectAll">selectAll</button>-->
+        </div>
+    </div>
+
+    <script>
+        // 在页面加载完成后初始化Datatable
+        $(document).ready(function () {
+            $('#evidence_table').DataTable({
+                "lengthMenu": [10,20,50], //修改行数显示
+                "columnDefs" :
+                    [{
+                        className: "hide_column",
+                        "targets": [0,2,4,5] //将第3,5,6列隐藏，从0开始计数
+                    }],
+                responsive: true,
+            });
+
+            // select2 init & trigger
+            let default_genes = [{ id: 'IL1B', text: 'IL1B' }]
+            // let default_genes = ['Tau','tau']
+            let genes = {{ select_entity | safe }};
+            $('#input-list').select2({
+                placeholder: "可单选 / 多选",
+                data: [
+                    { text: 'Gene', children:  genes['Gene'] },
+                    { text: 'Disease', children: genes['Disease'] },
+                    { text: 'MPA', children: genes['MPA'] },
+                    { text: 'CPA', children: genes['CPA'] },
+                    { text: 'Variant', children: genes['Var'] }
+                ],
+            });
+
+            let selectedValues = default_genes.map(option => option.id);
+            $('#input-list').val(selectedValues).trigger("change");
+            sendData();
+
+        });
+
+
+        // 监听复选框的改变事件
+        // $(document).on('change', '.row-checkbox', function () {
+        //     const selectedData = [];
+        //
+        //     // 遍历所有被选中的复选框
+        //     $('.row-checkbox:checked').each(function () {
+        //         // var row = $(this).closest('tr');
+        //         let val = $(this).parents("tr").find('td');
+        //         const rowData = {
+        //             node: JSON.parse(val.eq(3).text()),
+        //             link: JSON.parse(val.eq(4).text())
+        //         };
+        //         selectedData.push(rowData);
+        //     });
+        //     console.log('selectedData:',selectedData);
+        //     updateChart(selectedData);
+        // });
+        // const newDataMap = {};
+
+
+        function sendData() {
+            // var list = $('#input-list').val().split(',');
+            var list = $('#input-list').val();
+            $.ajax({
+                url: '/ADLitMiner/evidence/',
+                type: 'POST',
+                data: {'list': list},
+                dataType: 'json',
+                success: function(response) {
+                    updateTable(response.data);
+                    updateChart(response.data);
+                    console.log('response.data:',response.data);
+                    console.log('middle_data', middle_data);
+                }
+            });
+        }
+
+        function updateTable(data) {
+            const table = $('#evidence_table').DataTable();
+            table.clear().draw();
+            middle_data = [];
+
+            for (let i = 0; i < data.length; i++) {
+                table.row.add([
+                    data[i].tag,
+                    data[i].id,
+                    data[i].sentid,
+                    data[i].sent,
+                    JSON.stringify(data[i].node),
+                    JSON.stringify(data[i].link),
+                    '<input type="checkbox" class="row-checkbox" checked="checked">'
+                ]).draw();
+
+                middle_data.push(data[i]);
+            };
+        }
+
+        let middle_data = [];
+
+        // 监听复选框的改变事件
+        $(document).on('change', '.row-checkbox', function() {
+            const id = $(this).closest('tr').find('td:nth-child(2)').text();
+            const sentid = $(this).closest('tr').find('td:nth-child(3)').text();
+            const this_node = JSON.parse($(this).closest('tr').find('td:nth-child(5)').text());
+            const this_link = JSON.parse($(this).closest('tr').find('td:nth-child(6)').text());
+            if ($(this).is(':checked')) {
+                // 复选框被勾选，添加数据到 middle_data 中
+                  const indexData = {'id':id, 'sentid': sentid, 'node': this_node, 'link': this_link};
+                  console.log('indexData',indexData);
+                  middle_data.push(indexData);
+                  console.log('input-middle_data',middle_data);
+            } else {
+                // 复选框被取消勾选，从 middle_data 中删除对应行的数据
+                  const matchedIndex = middle_data.findIndex(function(item) {
+                      return item.id.toString() === id.toString() && item.sentid.toString() === sentid.toString();
+                  });
+                  middle_data.splice(matchedIndex, 1);
+                  console.log('matchedIndex',matchedIndex);
+                  console.log('delete-middle_data',middle_data);
+            }
+            updateChart(middle_data);
+        });
+
+
+        function updateChart(data) {
+            let nodes = [];
+            let edges = [];
+
+            // 遍历选中的数据
+            data.forEach(function(rowData) {
+                // 添加节点
+                rowData.node.forEach(function(node) {
+                    if (!nodes.find(function(n) { return n.name === node.name; })) {
+                        nodes.push(node);
+                    }
+                });
+
+                // 添加边
+                rowData.link.forEach(function(link) {
+                    edges.push(link);
+                });
+            });
+            const Node = nodes.map(function (item) {
+                return {
+                    'name': item.name,
+                    'category': item.category,
+                    'draggable': true,
+                    'symbolSize': [20, 20],
+                    'itemStyle':{
+                        color:item.color,
+                    }
+                };
+            });
+            const Link = edges.map(function (item) {
+                return {
+                    'source': item.source,
+                    'target': item.target,
+                    'category': item.category,
+                    // 'symbol': ['none', 'arrow'], //箭头
+                    // 'symbolSize': [5, 10]
+                    'lineStyle': {color:item.color},
+                };
+            });
+            console.log('Data:', Node)
+            console.log('Link:', Link)
+
+            const option = {
+                // title: {
+                //     text: 'Evidence-based Network',
+                //     textStyle: {
+                //         color: '#000000',
+                //     },
+                //     // left: "30px",
+                //     // top: "20px"
+                // },
+                color:['#87CEFA','#FFA500','#F0E68C','#BDB76B','#008000','#98FB98','#FF69B4','#FFB6C1','#9400D3','#000000','#dc143c','#4169e1'],
+                legend:[{
+                    orient: 'horizontal',
+                    icon: 'circle',
+                    align: 'left',
+                    bottom: '0',
+                    itemWidth: 8,
+                    itemHeight: 8,
+                    y: '30',
+                    x: 'left',
+                    data:["Disease", "Gene", "Protein", "Enzyme"],
+                    formatter: [
+                        '{b|{name}}'
+                    ].join('\n'),
+                    textStyle: {
+                        color: '#999999',
+                        fontSize: 12,
+                        align: 'left',
+                        // 文字块背景色，一定要加上，否则对齐不会生效
+                        backgroundColor: "transparent",
+                        rich: {b: {width: 55,},},
+                    },
+                },{
+                    orient: 'horizontal',
+                    icon: 'circle',
+                    align: 'left',
+                    bottom: '0',
+                    itemWidth: 8,
+                    itemHeight: 8,
+                    y: '50',
+                    x: 'left',
+                    data:["MPA", "CPA", "Pathway", "Interaction"],
+                    formatter: [
+                        '{b|{name}}'
+                    ].join('\n'),
+                    textStyle: {
+                        color: '#999999',
+                        fontSize: 12,
+                        align: 'left',
+                        // 文字块背景色，一定要加上，否则对齐不会生效
+                        backgroundColor: "transparent",
+                        rich: {b: {width: 55,},},
+                    },
+                },{
+                    orient: 'horizontal',
+                    icon: 'circle',
+                    align: 'left',
+                    bottom: '0',
+                    itemWidth: 8,
+                    itemHeight: 8,
+                    y: '70',
+                    x: 'left',
+                    data:["Var", "Reg", "PosReg", "NegReg"],
+                    formatter: [
+                        '{b|{name}}'
+                    ].join('\n'),
+                    textStyle: {
+                        color: '#999999',
+                        fontSize: 12,
+                        align: 'left',
+                        // 文字块背景色，一定要加上，否则对齐不会生效
+                        backgroundColor: "transparent",
+                        rich: {b: {width: 55,},},
+                    },
+                },
+                ],
+                series: [{
+                    data: Node,
+                    links: Link,
+                    categories: [
+                        {name: "Disease", color:'#87CEFA'},
+                        {name: "Gene", color: '#FFA500'},
+                        {name: "Protein", color: '#F0E68C'},
+                        {name: "Enzyme", color: '#BDB76B'},
+                        {name: "MPA", color: '#008000'},
+                        {name: "CPA", color: '#98FB98'},
+                        {name: "Pathway", color: '#FF69B4'},
+                        {name: "Interaction", color: '#FFB6C1'},
+                        {name: "Var", color: '#9400D3'},
+                        {name: "Reg", color: '#000000'},
+                        {name: "PosReg", color: '#dc143c'},
+                        {name: "NegReg", color: '#4169e1'}
+                    ],
+                    type: "graph",
+                    emphasis:{
+                        lineStyle:{
+                            width: 4,
+                        },
+                        edgeLabel:{
+                            show:true,
+                            formatter: function(params) {
+                                return params.data.category;
+                                },
+                        },
+
+                    },
+                    // 是否开启鼠标缩放和平移漫游。默认不开启。如果只想要开启缩放或者平移，可以设置成 'scale' 或者 'move'。设置成 true 为都开启
+                    roam: true,
+                    // 是否在鼠标移到节点上的时候突出显示节点以及节点的边和邻接节点。[ default: false ]
+                    focusNodeAdjacency: true,
+                    // 力引导布局相关的配置项，力引导布局是模拟弹簧电荷模型在每两个节点之间添加一个斥力，每条边的两个节点之间添加一个引力，每次迭代节点会在各个斥力和引力的作用下移动位置，多次迭代后节点会静止在一个受力平衡的位置，达到整个模型的能量最小化。
+                    force: {
+                        // 力引导布局的结果有良好的对称性和局部聚合性，也比较美观。
+                        // [ default: 50 ]节点之间的斥力因子(关系对象之间的距离)。支持设置成数组表达斥力的范围，此时不同大小的值会线性映射到不同的斥力。值越大则斥力越大
+                        repulsion: 200,
+                        // [ default: 30 ]边的两个节点之间的距离(关系对象连接线两端对象的距离,会根据关系对象值得大小来判断距离的大小)，
+                        edgeLength: [100, 80],
+                        // 这个距离也会受 repulsion。支持设置成数组表达边长的范围，此时不同大小的值会线性映射到不同的长度。值越小则长度越长。如下示例:
+                        // 值最大的边长度会趋向于 10，值最小的边长度会趋向于 50      edgeLength: [10, 50]
+                        gravity: 0.3
+                    },
+                    // 图的布局。[ default: 'none' ]
+                    layout: "force",
+                    // 'none' 不采用任何布局，使用节点中提供的 x， y 作为节点的位置。
+                    // 'circular' 采用环形布局;'force' 采用力引导布局.
+                    // 标记的图形
+                    symbol: 'circle',
+                    edgeSymbol: ['none', 'arrow'],
+                    edgeSymbolSize: 6,
+                    // 关系边的公用线条样式。其中 lineStyle.color 支持设置为'source'或者'target'特殊值，此时边会自动取源节点或目标节点的颜色作为自己的颜色。
+                    normal: {
+                        lineStyle: {
+                            // 线的颜色[ default: '#aaa' ]
+                            color: '#000',
+                            // 线宽[ default: 1 ]
+                            width: 2,
+                            // 线的类型[ default: solid实线 ]   'dashed'虚线    'dotted'
+                            type: 'solid',
+                            // 图形透明度。支持从 0 到 1 的数字，为 0 时不绘制该图形。[ default: 0.5 ]
+                            opacity: 1,
+                            // 边的曲度，支持从 0 到 1 的值，值越大曲度越大。[ default: 0 ]
+                            curveness: 0.6
+                        },
+                        // itemStyle:{
+                        //     color: function (pa)
+                        // }
+
+                    },
+                    // 关系对象上的标签
+                    label: {
+                        normal: {
+                            // 是否显示标签
+                            show: true,
+                            // 标签位置:'top''left''right''bottom''inside''insideLeft''insideRight''insideTop''insideBottom''insideTopLeft''insideBottomLeft''insideTopRight''insideBottomRight'
+                            position: "inside",
+                            // 文本样式
+                            textStyle: {
+                                fontSize: 18,
+                                color: '#000'
+                            }
+                        }
+                    },
+                }],
+                toolbox: {
+                    feature: {
+                        saveAsImage: {}, // 下载的按钮
+                        myFull: { // 全屏
+                          show: true,
+                          title: 'FullScreen',
+                          icon: 'path://M432.45,595.444c0,2.177-4.661,6.82-11.305,6.82c-6.475,0-11.306-4.567-11.306-6.82s4.852-6.812,11.306-6.812C427.841,588.632,432.452,593.191,432.45,595.444L432.45,595.444z M421.155,589.876c-3.009,0-5.448,2.495-5.448,5.572s2.439,5.572,5.448,5.572c3.01,0,5.449-2.495,5.449-5.572C426.604,592.371,424.165,589.876,421.155,589.876L421.155,589.876z M421.146,591.891c-1.916,0-3.47,1.589-3.47,3.549c0,1.959,1.554,3.548,3.47,3.548s3.469-1.589,3.469-3.548C424.614,593.479,423.062,591.891,421.146,591.891L421.146,591.891zM421.146,591.891',
+                          onclick: toggleFullScreen
+                        }
+                    },
+                    y:50,
+                },
+            };
+            // 获取关系图的 DOM 元素
+            let chart = echarts.getInstanceByDom(document.getElementById('chart_network'));
+            document.getElementById('chart_network').style.backgroundColor = '#fff';
+            function toggleFullScreen() {
+              var chartDom = document.getElementById('chart_network');
+              var chart = echarts.init(chartDom);
+              if (chartDom.requestFullscreen) {
+                chartDom.requestFullscreen();
+              } else if (chartDom.mozRequestFullScreen) {
+                chartDom.mozRequestFullScreen();
+              } else if (chartDom.webkitRequestFullscreen) {
+                chartDom.webkitRequestFullscreen();
+              } else if (chartDom.msRequestFullscreen) {
+                chartDom.msRequestFullscreen();
+              }
+
+              // 全屏切换后重新调整图表大小
+              setTimeout(function() {
+                chart.resize();
+              }, 100);
+              // 退出全屏
+                // 监听全屏状态的改变事件
+                document.addEventListener('fullscreenchange', exitFullScreenHandler);
+                document.addEventListener('webkitfullscreenchange', exitFullScreenHandler);
+                document.addEventListener('mozfullscreenchange', exitFullScreenHandler);
+                document.addEventListener('MSFullscreenChange', exitFullScreenHandler);
+
+                // 退出全屏后的处理函数
+                function exitFullScreenHandler() {
+                  if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+                    // 退出全屏后重新调整图表大小为原始大小
+                    setTimeout(function() {chart.resize();}, 100);
+                  }
+                }
+            }
+
+            // 如果关系图已经存在，则直接更新数据和配置项
+            if (chart) {
+                chart.setOption(option, true);
+            } else {
+                // 如果关系图不存在，则创建关系图并设置数据和配置项
+                chart = echarts.init(document.getElementById('chart_network'));
+                chart.setOption(option, true);
+            }
+            // });
+        }
+
+    </script>
+</body>
+</html>

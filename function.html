@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AD-LitMiner</title>
+    {% load static %}
+    <!-- 引入ECharts 文件 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.2/dist/echarts.min.js"></script>
+    <!-- DataTables CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static '/ADLitMiner/DataTables-1.10.21/media/css/jquery.dataTables.css' %}">
+    <!-- jQuery -->
+    <script type="text/javascript" charset="utf8" src="{% static '/ADLitMiner/js/jquery.min.js' %}"></script>
+    <!-- DataTables -->
+    <script type="text/javascript" charset="utf8" src="{% static '/ADLitMiner/DataTables-1.10.21/media/js/jquery.dataTables.js' %}"></script>
+    <!--引入多选框-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js"></script>
+
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            outline: none;
+            border: none;
+            text-decoration: none;
+            /*text-transform: capitalize;*/
+            transition: .2s linear;
+        }
+        /* header样式初始化*/
+        .header {
+            position: fixed;
+            top: 0;
+            /*left: 0;*/
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: #F5F5F5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header .logo {
+            color: 	#696969;
+            padding: 0 3rem;
+            font-size: 14px;
+        }
+        /* 导航样式 */
+        .navbar ul{
+            display: flex;
+            font-family: Arial;
+            margin-right:50px;
+        }
+
+        .navbar ul li{
+            /*font-weight: bold;*/
+            /*width: 128px;*/
+            padding: 10px 12px;
+            list-style: none;
+            text-align:center;
+            /*border-right: 4px dashed blue;*/
+        }
+        .navbar ul li a {
+            /*width: 128px;*/
+            line-height: 45px;
+            font-size: 1.2rem;
+            color: 	#696969;
+        }
+        .navbar ul li a:hover{
+            color: 	#C0C0C0;
+        }
+        .navbar ul li a.active{
+            color: black;
+            text-shadow: 0px 1px 1px grey;
+        }
+        .content{
+            margin: 10px 70px;
+        }
+        .title{
+            margin-top:70px;
+            /*font-family: Arial;*/
+            padding: 2rem 3rem;
+        }
+        .search-box{
+            padding: 2rem 3rem;
+        }
+        .search-box .input{
+            height: 40px;
+            /*margin-left: 10%;*/
+            text-align: center;
+            padding-top: 10px;
+        }
+        button{
+            background-color:#696969;
+            color:white;
+            width: 100px;
+            height: 40px;
+            border:0;
+            font-size: 16px;
+            border-radius: 30px;
+            margin-left: 20px;
+        }
+        button:hover{
+            background-color:#C0C0C0;
+            color:black;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'ADLitMiner:homepage' %}" class="logo">
+            <h1>AD-LitMiner</h1>
+        </a>
+        <nav class="navbar">
+            <ul>
+                <li><a href="{% url 'ADLitMiner:introduction' %}">Introduction</a></li>
+                <li><a>|</a></li>
+                <li><a href="{% url 'ADLitMiner:evidence' %}">Evidence-based</a></li>
+                <li><a>|</a></li>
+                <li><a class="active" href="{% url 'ADLitMiner:function' %}">Drug Repurposing</a></li>
+                <li><a>|</a></li>
+                <li><a href="{% url 'ADLitMiner:tutorial' %}">Tutorial</a></li>
+                <li><a>|</a></li>
+                <li><a href="{% url 'ADLitMiner:contact' %}">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div class="title">
+        <h1>Drug Repurposing</h1><br>
+<!--        <ul>-->
+<!--            <li style="margin-left: 50px">这里将有一段对该页面的描述，如何操作，结果解释等等等......</li>-->
+<!--        </ul>-->
+    </div>
+
+    <div class="search-box">
+        <h2>Search Target Gene/Drug</h2>
+        <div class="input">
+            <select id="input-list" multiple style="width: 80%"></select>
+            <button id='senddata' onclick="sendData()">SEND</button>
+        </div>
+
+    </div>
+
+    <div class="content">
+
+        <h2 style="margin-bottom:20px ">Results</h2>
+
+        <table id="dr_table" class="display">
+            <thead>
+            <tr>
+                <th style="text-align: center">DrugID</th>
+                <th>Drug Name</th>
+                <th>Indication</th>
+                <th style="width: 10%">Highest status</th>
+<!--                <th>TargetID</th>-->
+                <th style="width: 5%">Target Name</th>
+                <th>AD Risk Gene</th>
+<!--                <th>GeneID</th>-->
+                <th>MOA</th>
+                <th style="width: 40%">Evidence Example</th>
+                <th>Distance</th>
+                <th>All Evidence</th>
+<!--                <th>All-Evidence</th>-->
+            </tr>
+            </thead>
+            <tbody>
+            {% for info in info_output %}
+            <tr>
+                <td><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">{{ info.0 }}</a></td>
+                <td>{{ info.1 }}</td>
+                <td>{{ info.2 }}</td>
+                <td style="text-align: center">{{ info.3 }}</td>
+<!--                <td style="text-align: center">{{ info.4 }}</td>-->
+                <td style="text-align: center;width: 10%">{{ info.5 }}</td>
+                <td>{{ info.6 }}</td>
+<!--                <td>{{ info.7 }}</td>-->
+                <td>{{ info.8 }}</td>
+                <td>{{ info.9 }}</td>
+                <td style="text-align: center">{{ info.10 }}</td>
+                <td><a href="http://localhost">more</a></td>
+<!--                <td>{{ info.11 }}</td>-->
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <br><br>
+
+        <h2 style="margin-bottom:20px ">All Evidence</h2>
+        <table id="evidence_table" class="display">
+            <thead>
+            <tr>
+                <th>Target ID</th>
+                <th>AD Risk Gene</th>
+                <th>MOA</th>
+                <th>PMID</th>
+                <th>Evidence</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="text-align: center"><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">T45593</a></td>
+                <td style="text-align: center">MAPT</td>
+                <td style="text-align: center">Inhibitor</td>
+                <td style="text-align: center"><a href="https://pubmed.ncbi.nlm.nih.gov/17707586/">17707586</a></td>
+                <td>Since gain-of-function mutations of the MAPT gene cause frontotemporal lobar degeneration (FTLD) characterized by deposition of tau protein, we hypothesize that MAPT duplication affecting gene dosage could also lead to disease.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center"><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">T45593</a></td>
+                <td style="text-align: center">MAPT</td>
+                <td style="text-align: center">Inhibitor</td>
+                <td style="text-align: center"><a href="https://pubmed.ncbi.nlm.nih.gov/36915196">36915196</a></td>
+                <td>The association between mutations in the MAPT gene and development of fronto-temporal dementia with Parkinsonism-linked to chromosome 17 (FTLD-17) has paved the way for dysfunctional Tau, being considered sufficient for causing neurodegeneration and dementia even in absence of amyloid pathology.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center"><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">T45593</a></td>
+                <td style="text-align: center">MAPT</td>
+                <td style="text-align: center">Inhibitor</td>
+                <td style="text-align: center"><a href="https://pubmed.ncbi.nlm.nih.gov/36927491/">36927491</a></td>
+                <td>To the contrary, in participants carrying mutations in the MAPT gene that are known to cause tauopathies other than AD, blood-based p-tau181 levels remained normal as in healthy controls, and in the case of specific mutations the concentrations appeared to be further decreased compared with normal controls.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center"><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">T45593</a></td>
+                <td style="text-align: center">MAPT</td>
+                <td style="text-align: center">Inhibitor</td>
+                <td style="text-align: center"><a href="https://pubmed.ncbi.nlm.nih.gov/36906636/">36906636</a></td>
+                <td>These findings imply that haplotype- and disease-specific expression and splicing of MAPT may contribute to the association of H1-homozygosity with sporadic PD.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center"><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">T45593</a></td>
+                <td style="text-align: center">MAPT</td>
+                <td style="text-align: center">Inhibitor</td>
+                <td style="text-align: center"><a href="https://pubmed.ncbi.nlm.nih.gov/36906636/">36906636</a></td>
+                <td>Taken together, our results show that the MAPT haplotype influences overall MAPT expression and the PD status leads to increased insoluble tau protein in parallel with insoluble alpha-syn aggregates.</td>
+            </tr>
+            <tr>
+                <td style="text-align: center"><a href="https://db.idrblab.net/ttd/data/drug/details/{{ info.0 }}">T45593</a></td>
+                <td style="text-align: center">MAPT</td>
+                <td style="text-align: center">Inhibitor</td>
+                <td style="text-align: center"><a href="https://pubmed.ncbi.nlm.nih.gov/36744338/">36744338</a></td>
+                <td>However, it is important to remember that the p.P301 L MAPT mutation used to create AD models is known to cause non-AD tauopathies in humans (e.g., progressive supranuclear palsy, globular glial tauopathy) which instead typically present with frontotemporal dementia clinically.</td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
+
+<script>
+    $(document).ready(function() {
+        $('#dr_table').DataTable({
+            "lengthMenu": [5,10,20,50], //修改行数显示
+            responsive: true,
+        });
+        $('#evidence_table').DataTable({
+            "lengthMenu": [5,10,20,50], //修改行数显示
+        });
+        // select2 init & trigger
+        let default_genes = ['IL1B']
+        // let default_genes = ['AD']
+        // let genes = ['MAPT','APOE'];
+        $('#input-list').select2({
+                placeholder: "可单选 / 多选",
+                // data: genes,
+        });
+        $('#input-list').val(default_genes).trigger("change");
+    });
+
+    // function updateEvidence(row) {
+    //     var dr_table = document.getElementById('dr_table');
+    //     var evidence_table = document.getElementById('evidence_table');
+    //
+    //     var cells = row.cells;
+    //     var data = [];
+    //     for (var i = 5; i < 9; i++) {
+    //         data.push(cells[i].innerHTML);
+    //     }
+    //
+    //     var newRow = evidence_table.insertRow();
+    //     for (var j = 0; j < data.length; j++) {
+    //         var cell = newRow.insertCell();
+    //         cell.innerHTML = data[j];
+    //     }
+    // }
+
+</script>
+</body>
+</html>
